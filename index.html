@@ -1,0 +1,244 @@
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.js"></script>
+        <script>
+            new p5();
+            const width = 400;
+            const height = 500;
+            const bgLoop = (x, y, iter, scl) => {
+                rotate(10);
+                scale(scl);
+                translate(x, y);
+                noStroke();
+                fill(255,100);
+                let areaChangeRate = 0.1;
+                let areaChange = 0;
+                areaChange += areaChangeRate;
+                if(areaChange > 200){
+                    areaChangeRate = -areaChangeRate;
+                } 
+                if(areaChange < 20){
+                    areaChangeRate = -areaChangeRate;
+                } 
+                for ( let x = 0; x < width; x += iter){
+                    for ( let y = 0; y < height; y+= iter){
+                        ellipse (x , y , 80- (mouseY/(width/20)),80- (mouseX/(height/20)));
+                    }
+                }
+                resetMatrix();
+            }   
+
+            function setup () {
+                angleMode(DEGREES);
+                
+                createCanvas(width, height, P2D);
+            }
+            let bgPanX1 = 350;
+            let bgPanX2 = 750
+
+
+            const bgPanLogic = () => {
+                let X1Rate = 0.2;
+                let X2Rate = 0.4;
+                bgPanX1 -= X1Rate;
+                bgPanX2 -= X2Rate;
+
+                if( bgPanX1 < -width/2){
+                    bgPanX1 = random(550,700);
+                    X1Rate = random(0.2,0.6);
+                }
+
+                if( bgPanX2 < -width/2){
+                    bgPanX2 = random(750,900);
+                    X2Rate = random(0.2,0.6);
+                }
+
+            }
+
+            const mainChar = {
+                x: 0,
+                y: 100,
+                scl: 1,
+                mass: [1, 1],
+                acc: [0, 0],
+                rAcc: 1,
+                rOffset: 1,
+                vel: [0, 0],
+                grav: 0.001,
+                jumpTimer: 0,
+                draw(){
+                    translate(this.x, this.y);
+                    scale(this.scl);
+                    rotate(this.rAcc);
+                    fill(200);
+                    stroke(random(100,200),random(10,20),random(100,155));
+                    ellipse(0,0,30,30);
+                    ellipse(30,30-this.rOffset,20,20);
+                    ellipse(-30,30+this.rOffset/2,20,20);
+                    ellipse(0,-20+this.rOffset,20,20);
+                    resetMatrix();
+
+                },
+
+                update(){
+                    let offSetRate = 0.2;
+                    this.rAcc += 10;
+                    // this.rOffset += offSetRate;
+                    if (this.rOffset > 50){
+                        rOffset = 0;
+                        
+                        offSetRate = -0.2;
+                    }
+                    if (this.rOffset < 10){
+                        rOffset = 0;
+                        offSetRate = 0.2;
+                    }
+                    
+
+                    this.vel[0] = this.vel[0] + this.acc[0];
+                    this.vel[1] = this.vel[1] + this.acc[1];
+                    this.x += this.vel[0];
+                    this.y += this.vel[1];
+
+
+
+                },
+
+                applyForce(){
+                    if(key == 'd' && keyIsPressed){
+                        this.acc[0] = 0.07;
+                    }
+                    if(key == 'a' && keyIsPressed){
+                        this.acc[0] = -0.07;
+                    }
+
+                    this.acc[1] = this.acc[1]+this.grav;
+
+                    //boundaries
+                    //speedLimits
+                    if (this.vel[0] > 15){
+                        this.vel[0] = 15;
+                    }
+                    if (this.vel[0] < -15){
+                        this.vel[0] = -15;
+                    }
+                    if (this.vel[1] > 15){
+                        this.vel[1] = 15;
+                    }
+                    if (this.vel[1] < -15){
+                        this.vel[1] = -15;
+                    }
+
+                    if (this.acc[0] > 5){
+                        this.acc[0] = 5;
+                    }
+                    if (this.acc[0] < -5){
+                        this.acc[0] = -5;
+                    }
+                    if (this.acc[1] > 5){
+                        this.acc[1] = 5;
+                    }
+                    if (this.acc[1] < -5){
+                        this.acc[1] = -5;
+                    }
+                    //floor
+                    if(this.y > height - height/4){
+                        let timer = 0;
+                        this.jumpTimer = 0;
+                        if(timer < 5){
+                            timer = timer + 1;
+                            this.vel[1] = this.vel[1] * -1;
+                        }
+                        if ( timer >= 5){
+                            let cooldownTimer = 0;
+                            cooldownTimer += 1;
+                            this.vel[1] = 0;
+                            this.acc[1] = 0;
+                            this.y = height/4;
+                            if(coolDownTimer = 100){
+                                cooldownTimer = 0;
+                                let timer = 0;
+                            }
+                        }
+                    }
+                    //right-wall
+                    if(this.x > width - 50){
+                        let timer = 0;
+                        if(timer < 5){
+                            timer = timer + 1;
+                            this.vel[0] = this.vel[0] * -1;
+                        }
+                        // if ( timer >= 5){
+                        //     let cooldownTimer = 0;
+                        //     cooldownTimer += 1;
+                        //     this.vel[0] = 0;
+                        //     this.acc[0] = 0;
+                        //     // this.x = height/4;
+                        //     if(coolDownTimer = 100){
+                        //         cooldownTimer = 0;
+                        //         let timer = 0;
+                        //     }
+                        // }
+                    }
+
+                    //left wall
+                    //right-wall
+                    if(this.x < 0){
+                        let timer = 0;
+                        if(timer < 5){
+                            timer = timer + 1;
+                            this.vel[0] = this.vel[0] * -1;
+                        }
+                        // if ( timer >= 5){
+                        //     let cooldownTimer = 0;
+                        //     cooldownTimer += 1;
+                        //     this.vel[0] = 0;
+                        //     this.acc[0] = 0;
+                        //     // this.x = height/4;
+                        //     if(coolDownTimer = 100){
+                        //         cooldownTimer = 0;
+                        //         let timer = 0;
+                        //     }
+                        // }
+                    }
+
+                    //wind
+                    if(key == ' ' && keyIsPressed){
+                        
+                        if(this.jumpTimer < 5){
+                            this.jumpTimer = this.jumpTimer + 1;
+                            this.vel[1] = -25;
+                        }
+                    }
+
+
+                }
+            }    
+            const instantiateChar = () => {
+                mainChar.draw();
+                mainChar.update();
+                mainChar.applyForce();
+            }
+
+            function draw () {
+                
+                background(100,70,200);
+                //clouds
+                bgPanLogic();
+                bgLoop(bgPanX1, height/2.5 + 100, 35, 0.5);
+                bgLoop(bgPanX2, height/2.5 + 100, 35, 0.8);
+                bgLoop(bgPanX2*1.2, height/2.5 + 100, 35, 0.1);
+                //ground
+                fill(100);
+                rect(0,height - height/5, width, height/3);
+                instantiateChar();
+                fill(100,150);
+                rect(0,height - height/5, width, height/3);
+            
+            }
+        
+        
+        </script>
+    </head>
+   
+</html>
